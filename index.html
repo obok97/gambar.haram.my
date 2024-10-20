@@ -118,6 +118,9 @@ $(document).ready(function() {
         isGenerating = true;
         $(this).prop('disabled', true).text('Generating...');
 
+        // Add the current prompt to the search history immediately
+        addToSearchHistory(prompt);
+
         // Create a new loading container instead of removing existing images
         var loadingContainer = $('<div>').attr('id', 'loadingContainer').addClass('relative group');
         var loadingImg = $('<img>').attr({
@@ -140,6 +143,9 @@ $(document).ready(function() {
                 if (response.job_id) {
                     currentJobId = response.job_id;
                     checkJobStatus(currentJobId);
+                    
+                    // Add the generated prompt to the search history here
+                    addToSearchHistory(prompt); // Add this line
                 }
             },
             error: function(xhr, status, error) {
@@ -235,25 +241,38 @@ $(document).ready(function() {
             url: 'https://farhanzainal.my/gambar_ai/history.json',
             dataType: 'json',
             success: function(data) {
-                var recentSearches = Array.isArray(data) ? data.slice(-10).reverse() : [];
-                var currentSearch = $('input[type="text"]').val().trim();
-                if (currentSearch && !recentSearches.includes(currentSearch)) {
-                    recentSearches.unshift(currentSearch);
-                    if (recentSearches.length > 10) {
-                        recentSearches.pop();
-                    }
-                }
-                $('#searchHistory').empty();
-                recentSearches.forEach(function(search) {
-                    $('<button>')
-                        .text(search)
-                        .addClass('px-2 py-1 text-sm bg-gray-700 text-white rounded-lg mr-2 mb-2 hover:bg-gray-600 focus:outline-none')
-                        .appendTo('#searchHistory');
-                });
+                var recentSearches = Array.isArray(data) ? data.slice(-5).reverse() : [];
+
+                console.log(data);
+                updateSearchHistoryDisplay(recentSearches);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error loading search history:', textStatus, errorThrown);
             }
+        });
+    }
+
+    function addToSearchHistory(search) {
+        var recentSearches = $('#searchHistory button').map(function() {
+            return $(this).text();
+        }).get();
+        
+        if (!recentSearches.includes(search)) {
+            recentSearches.unshift(search);
+            if (recentSearches.length > 10) {
+                recentSearches.pop();
+            }
+            updateSearchHistoryDisplay(recentSearches);
+        }
+    }
+
+    function updateSearchHistoryDisplay(searches) {
+        $('#searchHistory').empty();
+        searches.forEach(function(search) {
+            $('<button>')
+                .text(search)
+                .addClass('px-2 py-1 text-sm bg-gray-700 text-white rounded-lg mr-2 mb-2 hover:bg-gray-600 focus:outline-none')
+                .appendTo('#searchHistory');
         });
     }
 
