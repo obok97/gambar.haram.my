@@ -272,7 +272,12 @@ $(document).ready(function() {
             $('<button>')
                 .text(search)
                 .addClass('px-2 py-1 text-sm bg-gray-700 text-white rounded-lg mr-2 mb-2 hover:bg-gray-600 focus:outline-none')
-                .appendTo('#searchHistory');
+                .appendTo('#searchHistory')
+                .click(function() {
+                    // Use the clicked search term to regenerate
+                    $('input[type="text"]').val(search); // Set the input value
+                    $('#generateBtn').click(); // Trigger the generate button click
+                });
         });
     }
 
